@@ -25,6 +25,7 @@ interface ProductProps {
   sku: string;
   category: string;
   tags: string[];
+  stockLevel: number;
 }
 
 
@@ -40,10 +41,15 @@ const Mainproduct: React.FC<ProductProps>  = ({
   sku,
   category,
   tags,
+  stockLevel,
 }) => {
 
   const { addToCart } = useCart();
   const router = useRouter();
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+
 
   const [localQuantity, setLocalQuantity] = useState(1);
   const handleIncrement = () => {
@@ -54,14 +60,27 @@ const Mainproduct: React.FC<ProductProps>  = ({
       setLocalQuantity((prevQuantity) => prevQuantity - 1);
     }
   };
+  
 
   const handleAddToCart = () => {
+    if (stockLevel <= 0) {
+      alert("This product is out of stock. Sorry for inconvience it will be available soon ...");
+      return;
+    }
+  
+    if (!selectedColor || !selectedSize) {
+      alert("Please select both size and color before adding to the cart.");
+      return;
+    }
+  
     addToCart({
       id: title, // Unique ID for product
       title,
       price,
       quantity: localQuantity,
       imageSrc,
+      size: selectedSize,
+      color: selectedColor,
     });
     router.push("/Cart"); // Navigate to Cart page
   };
@@ -168,33 +187,53 @@ const Mainproduct: React.FC<ProductProps>  = ({
           <p className=" w-[424px] pr-5 my-5">
           {description}
           </p>
+          <p>
+  {stockLevel > 0 ? (
+    <span className="text-green-600 font-semibold">In Stock</span>
+  ) : (
+    <span className="text-red-600 font-semibold">Out of Stock</span>
+  )}
+</p>
           <p className="text-[#9F9F9F] mt-3">Size</p>
 
           <div className="flex gap-5 my-5">
-            {size?.map((s, index) => (
-              <div
-                key={index}
-                className="w-[30px] h-[30px] lg:w-[40px] lg:h-[40px] bg-[#FBEBB5] rounded-lg flex justify-center items-center"
-              >
-                {s}
-              </div>
-            ))}
-          </div>
+  {size?.map((s, index) => (
+    <button
+      key={index}
+      className={`w-[30px] h-[30px] lg:w-[40px] lg:h-[40px] rounded-lg flex justify-center items-center ${
+        selectedSize === s
+          ? "bg-[#D9B678] border-2 border-black" // Selected size: green background, black border
+          : "bg-[#F2D99C] border-2 border-transparent" // Default size: beige background, no border
+      }`}
+      onClick={() => setSelectedSize(selectedSize === s ? null : s)} // Deselect if already selected
+    >
+      {s}
+    </button>
+  ))}
+</div>
+
+
+
           <p className="text-[#9F9F9F] mt-3">Colour</p>
 
           <div className="flex gap-5 my-5">
   {colors?.length > 0 ? (
     colors.map((color, index) => (
-      <div
+      <button
         key={index}
         style={{ backgroundColor: color }}
-        className="w-[30px] h-[30px] rounded-full"
-      ></div>
+        className={`w-[30px] h-[30px] rounded-full ${
+          selectedColor === color ? "border-2 border-black" : ""
+        }`}
+        onClick={() => setSelectedColor(selectedColor === color ? null : color)} // Deselect if already selected
+      ></button>
     ))
   ) : (
     <p>No colors available</p>
   )}
 </div>
+
+
 
           <div className="flex gap-5">
             <div className="flex justify-center items-center border-2 border-[#9F9F9F] rounded-lg py-4 px-3 gap-7 ">
@@ -208,9 +247,14 @@ const Mainproduct: React.FC<ProductProps>  = ({
             +
           </button>
             </div>
-            <button  onClick={handleAddToCart} className=" text-black py-4 px-10 flex justify-center items-center border-black rounded-2xl border-2" >
-              Add to Cart
-            </button>
+            <button
+  onClick={handleAddToCart} // Button is always clickable
+  className="py-4 px-10 flex justify-center items-center rounded-2xl border-2 border-black text-black"
+>
+  Add to Cart
+</button>
+
+
           </div>
 
           <hr className=" mt-20 w-full border-t-2 border-gray-300" />
@@ -263,6 +307,7 @@ const Mainproduct: React.FC<ProductProps>  = ({
         </div>
       </div>
       
+      
 
 
     </div>
@@ -271,3 +316,7 @@ const Mainproduct: React.FC<ProductProps>  = ({
 };
 
 export default Mainproduct;
+
+
+
+

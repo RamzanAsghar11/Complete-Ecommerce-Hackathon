@@ -8,8 +8,10 @@ import {
   getAllProducts,
   getCategories,
   getProductsByCategory,
+  searchProducts,
 } from "@/sanity/lib/queries";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
 type Category = {
   _id: string;
@@ -23,17 +25,18 @@ type ProductType = {
   price: number;
 };
 
-const Shop = () => {
+const ShopContent = () => {
   const [products, setProducts] = useState<ProductType[]>([]);
   const [allProducts, setAllProducts] = useState<ProductType[]>([]); // For holding all products
- 
   const [sortOption, setSortOption] = useState("Default");
   const [itemsPerPage, setItemsPerPage] = useState(16);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryProducts, setCategoryProducts] = useState<{ [key: string]: ProductType[] }>({});
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1); // Track current page
- 
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const searchParams = useSearchParams();
 
   // Fetch categories
   useEffect(() => {
@@ -42,7 +45,6 @@ const Shop = () => {
         const fetchedCategories = await getCategories();
         setCategories(fetchedCategories);
       } catch (error) {
-        
         console.error("Error fetching categories:", error);
       }
     };
@@ -50,21 +52,42 @@ const Shop = () => {
     fetchCategories();
   }, []);
 
+  // Handle searchParams logic inside Suspense
+  useEffect(() => {
+    const query = searchParams?.get("search") || "";
+    setSearchQuery(query);
+  }, [searchParams]);
+
   // Fetch all products
   useEffect(() => {
     const fetchAllProducts = async () => {
       try {
-        const fetchedProducts = await getAllProducts(); // Fetch all products initially
+        const fetchedProducts = await getAllProducts();
         setAllProducts(fetchedProducts);
-        setProducts(fetchedProducts); // Set all products as the initial list
+        if (!searchQuery) setProducts(fetchedProducts);
       } catch (error) {
-      
         console.error("Error fetching products:", error);
       }
     };
 
     fetchAllProducts();
-  }, []);
+  }, [searchQuery]);
+
+  // Fetch search results
+  useEffect(() => {
+    const fetchSearchResults = async () => {
+      if (searchQuery) {
+        try {
+          const searchResults = await searchProducts(searchQuery);
+          setProducts(searchResults);
+        } catch (error) {
+          console.error("Error searching products:", error);
+        }
+      }
+    };
+
+    fetchSearchResults();
+  }, [searchQuery]);
 
   // Fetch products by category
   const handleCategoryClick = async (categoryTitle: string) => {
@@ -90,7 +113,6 @@ const Shop = () => {
       setProducts(filteredProducts); // Update state with filtered products
       setCurrentPage(1); // Reset to page 1
     } catch (error) {
-      
       console.error("Error fetching products by category:", error);
     }
   };
@@ -113,13 +135,13 @@ const Shop = () => {
     const indexOfLastProduct = currentPage * itemsPerPage;
     const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
     return sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-  }, [sortedProducts, currentPage, itemsPerPage]); 
+  }, [sortedProducts, currentPage, itemsPerPage]);
 
   // Updated displayed range for pagination
   const displayedProductsCount = useMemo(() => {
     const totalDisplayed = Math.min(currentPage * itemsPerPage, products.length);
     return totalDisplayed; // Fixes incorrect product count display
-  }, [currentPage, itemsPerPage, products.length]); 
+  }, [currentPage, itemsPerPage, products.length]);
 
   const startIndex = useMemo(() => {
     return (currentPage - 1) * itemsPerPage + 1;
@@ -278,6 +300,14 @@ const Shop = () => {
         <Delivery />
       </div>
     </div>
+  );
+};
+
+const Shop = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ShopContent />
+    </Suspense>
   );
 };
 

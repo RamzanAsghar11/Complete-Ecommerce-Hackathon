@@ -33,9 +33,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${roboto.variable} ${poppins.variable} font-sans`}>
           
-         <Header/>
-         <CartProvider>{children}</CartProvider>
-         <Footer/>
+          <CartProvider>
+          <Header />
+          {children} {/* Child components will have access to the context */}
+          
+        </CartProvider>
+        <Footer />
       </body>
     </html>
   );

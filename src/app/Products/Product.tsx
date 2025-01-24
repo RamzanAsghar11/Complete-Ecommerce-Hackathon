@@ -23,7 +23,7 @@ const Product: React.FC<ProductProps> = ({
         </div>
         <div className="pr-20 space-y-4">
           <p className="text-[16px]">{title}</p>
-          <p className="font-semibold text-[24px] tracking-wider">
+          <p className="font-semibold text-[24px] tracking-wider"> Rs.
             {price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </div>

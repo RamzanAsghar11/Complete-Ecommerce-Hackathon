@@ -1,13 +1,14 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
-import { usePathname} from "next/navigation";
+import { usePathname, useRouter} from "next/navigation";
 import { TbUserExclamation } from "react-icons/tb";
 import { FiSearch } from "react-icons/fi";
 import { IoMdHeartEmpty } from "react-icons/io";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { FaBars, FaTimes } from "react-icons/fa";
 import Link from "next/link";
+import { useCart } from "../Context/CartContext";
 
 {
   /*Using function for hambuger menu*/
@@ -18,11 +19,31 @@ const Header = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname();
+  const { getTotalQuantity } = useCart(); // Get total quantity from CartContext
+  const totalItems = getTotalQuantity(); // Get the total number of items in the cart
+  
+  
+
  
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
+  const router = useRouter();
+
+  const handleSearch = () => {
+    if (searchTerm.trim()) {
+      router.push(`/Shop?search=${encodeURIComponent(searchTerm)}`);
+      setSearchTerm(""); // Reset search bar after navigating
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+  
  
  
 
@@ -73,13 +94,14 @@ const Header = () => {
             </button>
 
             {isSearchOpen && (
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="border px-4 py-2 rounded w-36 xl:w-64 "
-              />
+               <input
+               type="text"
+               placeholder="Search products..."
+               value={searchTerm}
+               onChange={(e) => setSearchTerm(e.target.value)}
+               onKeyDown={handleKeyDown}  // Add the keyDown handler here
+               className="border px-4 py-2 rounded w-36 xl:w-64"
+             />
             )}
           </div>
 
@@ -87,8 +109,15 @@ const Header = () => {
             <IoMdHeartEmpty className="cursor-pointer" />
           </Link>
           <Link href="/Cart">
-            <AiOutlineShoppingCart className="cursor-pointer" />
-          </Link>
+          <div className="relative">
+          <AiOutlineShoppingCart className="cursor-pointer" />
+          {totalItems > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+              {totalItems}
+            </span>
+          )}
+        </div>
+        </Link>
         </div>
 
         {/* Hamburger Menu for Mobile */}
@@ -143,23 +172,34 @@ const Header = () => {
 
               {isSearchOpen && (
                 <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="border px-4 py-2 rounded w-52"
-                />
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={handleKeyDown}  // Add the keyDown handler here
+                className="border px-4 py-2 rounded w-36 xl:w-64"
+              />
               )}
             </div>
             <Link href="/Checkout">
               <IoMdHeartEmpty />
             </Link>
-            <Link href="/Cart">
-              <AiOutlineShoppingCart />
-            </Link>
+            <div className="relative">
+          <AiOutlineShoppingCart className="cursor-pointer" />
+          {totalItems > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+              {totalItems}
+            </span>
+          )}
+        </div>
+
+
+
           </div>
         </div>
       )}
+
+
     </div>
   );
 };

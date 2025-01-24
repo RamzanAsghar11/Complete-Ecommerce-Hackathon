@@ -13,6 +13,7 @@ export const getProductById = async (id: string) => {
     size,
     colors,
     sku,
+    stockLevel,
     "category": category->title,
     tags
   }`;
@@ -69,6 +70,24 @@ export const getProductsByCategory = async (categoryTitle: string) => {
     }`;
     return await client.fetch(query, { categoryTitle }); 
 };
+
+export const searchProducts = async (searchTerm: string) => {
+  const query = `*[_type == "product" && (title match $searchTerm || tags[] match $searchTerm)] {
+    _id,
+    title,
+    price,
+    description,
+    "imageSrc": imageSrc.asset->url
+  }`;
+
+  return await client.fetch(query, { searchTerm: `${searchTerm}*` });
+};
+
+
+
+
+
+
 
 
 

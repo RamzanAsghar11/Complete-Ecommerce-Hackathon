@@ -25,16 +25,16 @@ export default async function ProductDetailsPage ({ params }: PageParams) {
     return (
       <div>
         <Mainproduct
-         title={product.title}
-         imageSrc={product.imageSrc}
-         price={product.price}
-         description={product.description}
-         size={product.size} // Size field pass ho raha hai
-         colors={product.colors}
-         sku={product.sku}
-         category={product.category}
-         tags={product.tags}
-        />
+          title={product.title}
+          imageSrc={product.imageSrc}
+          price={product.price}
+          description={product.description}
+          size={product.size} 
+          colors={product.colors}
+          sku={product.sku}
+          category={product.category}
+          tags={product.tags} 
+          stockLevel={product.stockLevel}        />
         <div>
             <Description/>
             <Picksforyou title="Related Products" showDescription={false} />

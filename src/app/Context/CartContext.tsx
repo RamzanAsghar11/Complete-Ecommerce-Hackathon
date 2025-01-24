@@ -3,11 +3,13 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 interface CartItem {
-  imageSrc: string;
   id: string;
   title: string;
   price: number;
   quantity: number;
+  imageSrc: string;
+  size: string; // Add size
+  color: string; // Add color
 }
 
 interface CartContextType {
@@ -15,7 +17,7 @@ interface CartContextType {
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: string) => void;
   updateCartQuantity: (id: string, quantity: number) => void;
-  
+  getTotalQuantity: () => number; // Added function to calculate total quantity
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -28,18 +30,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const existingProduct = prevCart.find((item) => item.id === product.id);
 
       if (existingProduct) {
-        // If the product exists, update its quantity
+        // If product exists, update quantity
         return prevCart.map((item) =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + product.quantity }
             : item
         );
       } else {
-        // If the product doesn't exist, add it to the cart
+        // If product doesn't exist, add it to the cart
         return [...prevCart, product];
       }
     });
-}
+  };
 
   const removeFromCart = (id: string) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== id));
@@ -53,12 +55,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
- 
+  // Function to calculate total quantity of items in the cart
+  const getTotalQuantity = () => {
+    return cart.reduce((sum, item) => sum + item.quantity, 0);
+  };
 
   return (
-    <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateCartQuantity }}
-    >
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateCartQuantity, getTotalQuantity }}>
       {children}
     </CartContext.Provider>
   );
